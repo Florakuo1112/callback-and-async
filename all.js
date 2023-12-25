@@ -3,12 +3,14 @@
 
 const randomNumbers = [1, 8, 10, 22, 137, 31];
 
+//filter寫法 arr.filter(function(item){return item%2 !==0})
+
 function isOdd(num) {
-    return num.filter(num => num % 2 != 0)
+    return num.filter((item)=>{return item%2 !==0})
 };
 
 function isEven(num) {
-    return num.filter(num => num%2 == 0)
+    return num.filter((item)=>{return item%2 ==0})
 };
 
 //callback＝>傳入參數的函式. 上面的任一函式,使用參數callback,可以傳入主函式。因為是參數，可以呼叫不同的函式,直接呼叫的話就不行
@@ -20,6 +22,7 @@ function filter(arr, callback) {
 
 console.log(filter(randomNumbers, isOdd));
 console.log(filter(randomNumbers, isEven));
+
 
 //第二題：定時器
 //請製作兩個打印文字定時器，分別運用 setTimeout 與 setInterval 來達成，間隔一秒打印一次。
@@ -75,40 +78,38 @@ const debouncee = document.querySelector('.debounce')
 const throttlee = document.querySelector('.throttle');
 
 
-//debounce練習
-// function debounce(callback, delay = 5000) {
-//     let timer;
-//     //console.log(...args)
-//     return (...args) => {
-//       clearTimeout(timer);
-//       timer = setTimeout(() => {
-//         callback(...args); // 在延迟后执行回调函数，并传递参数
-//       }, delay);
-//     };
-//   }
+//debounce固定寫法,
 
 function debounce(callback, delay = 3000){
     let timer;
-    return function(...args){
+    return (...args)=>{
         console.log(...args)
         clearTimeout(timer);
         timer = setTimeout(()=>callback(...args), delay)
     }
 }
+//把需要被執行debounce的功能放盡callback包裝起來，好維護
+let conductDebounce = debounce(showDebounce, 3000)
+
+function showDebounce(word) {
+    debouncee.innerHTML = `<li class="debounce">Debounce:<span>${word}</span></li>`
+   }
+
 //(...args) 这个语法是定义返回的函数的参数，这个函数会在调用时接收参数，并将这些参数传递给 callback 函数。它不是代表 debounce 函数本身的参数，而是用于接收 debounce 返回的函数的参数。
 
-//throttle節流練習
-let throttleTimeout;
-
+//throttle固定寫法
 function throttle(callback, delay=2000){
+    let timer;
     return (...args)=>{
-        if(!throttleTimeout){
-            throttleTimeout = setTimeout(()=>{
-            callback(...args);throttleTimeout=null 
+        if(timer==undefined){
+            timer = setTimeout(()=>{
+            callback(...args);timer=undefined
             },delay)
         }
     }
 };
+//把需要執行throttle的功能放盡callback包裝起來，好維護
+let conductThrottle = throttle(showThrottle, 3000)
 
   
 
@@ -116,9 +117,7 @@ function throttle(callback, delay=2000){
    defaultt.innerHTML = ` <li class="default">Default:<spant>${word}</span></li>`
   }
 
-  function showDebounce(word) {
-    debouncee.innerHTML = `<li class="debounce">Debounce:<span>${word}</span></li>`
-   }
+
 
     function showThrottle(word) {
     throttlee.innerHTML = `<li class="throttle">Throttle:<span>${word}</span></li>`
@@ -134,8 +133,9 @@ function throttle(callback, delay=2000){
 
 input.addEventListener('input', function(e){
     showDefault(input.value);
-    debounce(showDebounce)(input.value)
-    throttle(showThrottle)(input.value)
+    //debounce(showDebounce)(input.value) 這個寫法無法實現debounce
+    conductDebounce(input.value)
+    conductThrottle (input.value)
 });
 //第五題：非同步計算矩形面積 回呼函式
 //請製作一個計算矩形面積的函式。當被呼叫時經過 1秒 後，使用邊長計算出矩形的面積，使用 console.log 印出。
@@ -183,11 +183,11 @@ function calcRectangleArea2(side,callback){
 
     function myFunction(){
         if(typeof(side)!== 'number'){
-            callback(new TypeError('請輸入數字'), null) 
+            callback('TypeError:請輸入數字', null) 
             return
         };
         if(side<=0){
-            callback(new Error('請輸入正數'),null)
+            callback('Error:請輸入正數',null)
             return
         };
         callback(null, side**2)
@@ -195,9 +195,6 @@ function calcRectangleArea2(side,callback){
     //setTimeout要用函示
     setTimeout(myFunction, 2000)
 }
-
-//当在 JavaScript 中创建一个错误对象时，可以使用 new Error() 或 new TypeError() 来生成不同类型的错误。这些错误对象可以包含有关错误的有用信息，并可用于在代码中识别特定类型的问题。
-//const typeError = new TypeError('这是一个类型错误消息')
 
 //error是參數
 function result2(error, result){
@@ -251,31 +248,51 @@ promiseSetTimeOut(1>1).then(function(res){
 function calcRectangleArea3(side){
 
     return new Promise((resolve, reject)=>{
-        if(side>0 && typeof side =='number'){
-            resolve(console.log(side**2))
-        }else if (side<=0){
-            reject(Error('請輸入正數'));   
-        }else if(typeof side !== 'number'){
-            reject(TypeError('請輸入數字')); 
-                
-        }
+        setTimeout(()=>{
+            if(side>0 && typeof side =='number'){
+                resolve(console.log('第七題promise'+side**2))
+            }else if (side<=0){
+                reject('第七題promise'+'Error:請輸入正數');   
+            }else if(typeof side !== 'number'){
+                reject('第七題promise'+'Error:請輸入數字'); 
+                    
+            }
+        },1000)
+        
     })
 }
 
 
-// calcRectangleArea3('i').then((res)=>{
-//     console.log(res)
-// }).catch((error)=>{
-//     console.log(error)
-// })
+calcRectangleArea3(9).then((res)=>{
+    console.log(res)
+}).catch((error)=>{
+    console.log(error)
+})
 
 //第八題：改寫至 Async / Await
 //延續第五題。改為使用 Async / Await 來撰寫，成功或失敗都將結果或錯誤使用 console.log 印出。
 
+function calcRectangleArea4(side){
+
+    return new Promise((resolve, reject)=>{
+        setTimeout(()=>{
+            if(side>0 && typeof side =='number'){
+                resolve(console.log('第八題await'+side**2))
+            }else if (side<=0){
+                reject('第八題await'+'Error:請輸入正數');   
+            }else if(typeof side !== 'number'){
+                reject('第八題await'+'Error:請輸入數字'); 
+                    
+            }
+        },1000)
+        
+    })
+}
+
 
 async function getResult(side){
     try{
-        await calcRectangleArea3(side);
+        await calcRectangleArea4(side);
         console.log('done')
     }catch(error){
         console.log(error)
@@ -366,6 +383,5 @@ btn3.addEventListener('click', (e)=>{
         console.log('finish')
     })
 })
-
 
 
